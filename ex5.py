@@ -7,6 +7,7 @@
 # minimizes the difference between the maximum and minimum number of
 # shifts worked among all workers. The second optimization is allowed
 # to degrade the first objective by up to the smaller value of 10% and 2 */
+import gurobipy
 from gurobipy import *
 import sys
 

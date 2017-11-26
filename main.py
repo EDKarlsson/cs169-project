@@ -10,7 +10,7 @@ workers, pay, maxHours = multidict({
     "Madina": [10, 6],
     "Alan": [12, 8],
     "Ben": [10, 5],
-    "Dan": [8, 8]})
+    "Dan": [8, 12]})
 
 # Work hours and number of workers required per hour
 workHours, hourlyRequirements = multidict({
@@ -27,14 +27,19 @@ workHours, hourlyRequirements = multidict({
     "10am": 3,
     "11am": 3})
 
-t_m = model.addVar(lb=MIN_HOURS, ub=8, name="madina_time_worked")
-t_a = model.addVar(lb=MIN_HOURS, ub=8, name="alan_time_worked")
-t_b = model.addVar(lb=MIN_HOURS, ub=8, name="ben_time_worked")
-t_d = model.addVar(lb=MIN_HOURS, ub=8, name="dan_time_worked")
+A = [[1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0],
+     [0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0],
+     [0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1],
+     [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]]
+availability = {(w,s) : A[j][i] for i,s in enumerate(hourlyRequirements)
+                                for j, w in enumerate(workers)}
 
-model.addConstr(t_m <= maxHours["Madina"], "madina_max_hour")
-model.addConstr(t_a <= maxHours["Alan"], "alan_max_hour")
-model.addConstr(t_b <= maxHours["Ben"], "ben_max_hour")
-model.addConstr(t_d <= maxHours["Dan"], "dan_max_hour")
+# print(availability)
 
-model.optimize()
+totHours = model.addVars(workers, name='TotHours')
+# print(help(totHours['Madina']))
+print(totHours[w].x <= maxHours[w] for w in workers)
+
+# model.addConstr((totHours[w].x <= maxHours[w] for w in workers), name='maxHourRequirement')
+#
+# model.optimize()
