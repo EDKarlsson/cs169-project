@@ -18,6 +18,7 @@ try:
 
     # Number of workers required for each shift
     S = [3, 2, 4, 4, 5, 6, 5, 2, 2, 3, 4, 6, 7, 5]
+    
     shiftRequirements = {s: S[i] for i, s in enumerate(Shifts)}
 
     # Worker availability: 0 if the worker is unavailable for a shift
@@ -56,15 +57,13 @@ try:
 
     # Constraint: assign exactly shiftRequirements[s] workers
     # to each shift s, plus the slack
-    model.addConstrs((x.sum('*', s) + slacks[s] == shiftRequirements[s] for s in Shifts),
-                     name='shiftRequirement')
+    model.addConstrs((x.sum('*', s) + slacks[s] == shiftRequirements[s] for s in Shifts), name='shiftRequirement')
 
     # Constraint: set totSlack equal to the total slack
     model.addConstr(totSlack == slacks.sum(), name='totSlack')
 
     # Constraint: compute the total number of shifts for each worker
-    model.addConstrs((totShifts[w] == x.sum(w, '*') for w in Workers),
-                     name='totShifts')
+    model.addConstrs((totShifts[w] == x.sum(w, '*') for w in Workers), name='totShifts')
 
     # Constraint: set minShift/maxShift variable to less/greater than the
     # number of shifts among all workers
