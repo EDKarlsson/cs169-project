@@ -21,6 +21,7 @@ shifts, shiftRequirements = multidict({
     "Fri12": 6,
     "Sat13": 7,
     "Sun14": 5})
+
 # Amount each worker is paid to work one shift
 workers, pay = multidict({
     "Amy": 10,
@@ -30,6 +31,7 @@ workers, pay = multidict({
     "Ed": 8,
     "Fred": 9,
     "Gu": 11})
+
 # Worker availability
 availability = tuplelist([
     ('Amy', 'Tue2'), ('Amy', 'Wed3'), ('Amy', 'Fri5'), ('Amy', 'Sun7'),
@@ -63,8 +65,7 @@ x = m.addVars(availability, ub=1, name="x")
 m.setObjective(quicksum(pay[w] * x[w, s] for w, s in availability), GRB.MINIMIZE)
 
 # Constraint: assign exactly shiftRequirements[s] workers to each shift s
-reqCts = m.addConstrs((x.sum('*', s) == shiftRequirements[s]
-                       for s in shifts), "_")
+reqCts = m.addConstrs((x.sum('*', s) == shiftRequirements[s] for s in shifts), "_")
 # Optimize
 m.optimize()
 status = m.status
