@@ -1,4 +1,5 @@
 from gurobipy import *
+import numpy as np
 
 # Gurobi Model
 model = Model("Assignment")
@@ -14,11 +15,11 @@ workers, pay, maxHours = multidict({
 
 # Work hours and number of workers required per hour
 workHours, hourlyRequirements = multidict({
-    "12am": 3,
+    "mam": 3,
     "1am": 3,
     "2am": 3,
     "3am": 3,
-    "4am": 3,
+    "nam": 3,
     "5am": 3,
     "6am": 3,
     "7am": 3,
@@ -27,19 +28,42 @@ workHours, hourlyRequirements = multidict({
     "10am": 3,
     "11am": 3})
 
-A = [[1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0],
+n = 4
+m = 12
+
+A = np.array([[1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0],
      [0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0],
      [0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1],
-     [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]]
-availability = {(w,s) : A[j][i] for i,s in enumerate(hourlyRequirements)
-                                for j, w in enumerate(workers)}
+     [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]])
 
-# print(availability)
+pay_vec = np.array([pay[worker] for worker in workers])
 
-totHours = model.addVars(workers, name='TotHours')
-# print(help(totHours['Madina']))
-print(totHours[w].x <= maxHours[w] for w in workers)
+print(pay_vec)
 
-# model.addConstr((totHours[w].x <= maxHours[w] for w in workers), name='maxHourRequirement')
+hours = np.array([[model.addVar(vtype=GRB.BINARY,name='x_{' + str(i) + ',' + str(j) + '}') for j in range(m)] for i in range(n)])
+for i in range(n):
+    for j in range(m):
+        if A[i,j] == 0:
+            model.addConstr(hours[i,j] == 0)
+
+for col in hours.T:
+    model.addConstr(quicksum(col) == 1) # only one per shift
+
+model.addConstr(quicksum(hours.ravel()) == m) # all 12 shifts covered
+
+
+model.setObjective(quicksum(np.dot(hours.T, pay_vec).ravel()), GRB.MINIMIZE)
+
+model.update()
+model.optimize()
+
+# results = np.ndarray(shape=(n,m))
+# for i in range(n):
+#     for j in range(m):
+#         results[i,j] = hours[i,j].X
 #
-# model.optimize()
+# print results
+
+for i,row in enumerate(np.array(model.X).reshape(n,m)):
+    print(workers[i],row)
+
