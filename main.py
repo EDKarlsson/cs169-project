@@ -47,9 +47,17 @@ for i in range(n):
             model.addConstr(hours[i,j] == 0)
 
 for col in hours.T:
-    model.addConstr(quicksum(col) == 1) # only one per shift
+    model.addConstr(quicksum(col) >= 1) # only one per shift
 
-model.addConstr(quicksum(hours.ravel()) == m) # all 12 shifts covered
+model.addConstr(quicksum(hours.ravel()) >= m) # all 12 shifts covered
+for i in range(n):
+    for j in range(m - 1):
+        # we want (hours[i,j] == 0 and (hours[i,j + 1] == 0 or quicksum(hours[i,:j]) == 0))
+        #          or hours[i,j] == 1) but we cant explicitly program logical constraints
+        helper = model.addVar()
+        model.addConstr(helper == hours[i,j + 1] * quicksum(hours[i,:j]))
+        model.addConstr((hours[i,j] == 0) >> (helper == 0))
+
 
 
 model.setObjective(quicksum(np.dot(hours.T, pay_vec).ravel()), GRB.MINIMIZE)
@@ -57,13 +65,13 @@ model.setObjective(quicksum(np.dot(hours.T, pay_vec).ravel()), GRB.MINIMIZE)
 model.update()
 model.optimize()
 
-# results = np.ndarray(shape=(n,m))
-# for i in range(n):
-#     for j in range(m):
-#         results[i,j] = hours[i,j].X
-#
-# print results
+results = np.ndarray(shape=(n,m))
+for i in range(n):
+    for j in range(m):
+        results[i,j] = hours[i,j].X
 
-for i,row in enumerate(np.array(model.X).reshape(n,m)):
-    print(workers[i],row)
+print results
+
+# for i,row in enumerate(np.array(model.X).reshape(n,m)):
+#     print(workers[i],row)
 
