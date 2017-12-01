@@ -70,7 +70,8 @@ for i in range(n):
     for j in range(m):
         results[i,j] = hours[i,j].X
 
-print results
+for i,row in enumerate(results):
+    print(workers[i],row)
 
 # for i,row in enumerate(np.array(model.X).reshape(n,m)):
 #     print(workers[i],row)
