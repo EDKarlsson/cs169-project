@@ -55,7 +55,7 @@ for i in range(n):
         # we want (hours[i,j] == 0 and (hours[i,j + 1] == 0 or quicksum(hours[i,:j]) == 0))
         #          or hours[i,j] == 1) but we cant explicitly program logical constraints
         helper = model.addVar()
-        model.addConstr(helper == hours[i,j + 1] * quicksum(hours[i,:j])) # if helper == 1 then either hours[i,j+1] is zero or all the previous hours are zero
+        model.addConstr(helper == hours[i,j + 1] * quicksum(hours[i,:j])) # if helper == 0 then either hours[i,j+1] is zero or all the previous hours are zero
         model.addConstr((hours[i,j] == 0) >> (helper == 0)) # if hour j is a zero then hour j+1 can only be a 1 if all the previous are zero
 
 
