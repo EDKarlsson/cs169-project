@@ -33,7 +33,7 @@ def feasibility_checks(n,m, max_hours, A, roles, workers, worker_roles):
     assert m <= n * max_hours / len(roles), 'Not enough employees to fill each role every day'
 
 
-def schedule_workers(pay, availability, roles, worker_roles, max_hours_per_employee_per_day = 8, total_hours_in_day = 12, total_days = 7, attempt_fair_assignment = True):
+def schedule_workers(pay, availability, roles, worker_roles, max_hours_per_employee_per_day = 8, total_hours_in_day = 12, total_days = 7, attempt_fair_assignment = True, fairness_factor = 2):
     """
     example input:
     pay = {
@@ -60,6 +60,12 @@ def schedule_workers(pay, availability, roles, worker_roles, max_hours_per_emplo
     :param availability: maps each employee to a list of binary values signifying availability per shift
     :param roles: list the necessary roles
     :param worker_roles: maps workers to the roles they can fullfill
+    :param max_hours_per_employee_per_day: max number of hours an employee can work each day
+    :param total_hours_in_day: how many hours in the day
+    :param total_days: how many days to schedule
+    :param attempt_fair_assignment: attempt to enusre that the number of hours each employee works is in the range of
+    the average +- fairness_factor, subject to relaxation of the constraints
+    :param fairness_factor: how close to make employee assignments to eachother
     :return: resulting matrix of schedulings
     """
 
@@ -71,7 +77,7 @@ def schedule_workers(pay, availability, roles, worker_roles, max_hours_per_emplo
     n = len(pay)  # number of employees
     m = total_hours_in_day  # number hours in the day
     max_hours = max_hours_per_employee_per_day
-    hour_evenness = 2
+    hour_evenness = fairness_factor
 
     days = [day for day in range(total_days)]
     day_names = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
@@ -182,7 +188,7 @@ def schedule_workers(pay, availability, roles, worker_roles, max_hours_per_emplo
     #             print(']')
 
     # print a matrix of employee names
-    for day, day_name in enumerate(day_names):
+    for day, day_name in enumerate(day_names[:total_days]):
         print '\n-----------------' + day_name + '---------------------\n'
         for k, role in enumerate(roles):
             print role + ': [',
@@ -193,7 +199,7 @@ def schedule_workers(pay, availability, roles, worker_roles, max_hours_per_emplo
             print ']'
 
     #summary
-    print('total number of hours worked per employee:')
+    print('\n\ntotal number of hours worked per employee:')
     for i, worker in enumerate(workers):
         print(worker,hours_per_worker_per_week[i].getValue())
 
