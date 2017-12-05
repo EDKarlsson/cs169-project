@@ -8,19 +8,19 @@ pay = {
 }
 
 availability = {
-    "Madina": [1, 1, 0],
-    "Alan": [1, 1, 1],
-    "Ben": [1, 1, 1],
-    "Dan": [1, 1, 1]
+    "Madina": [1],
+    "Alan": [1],
+    "Ben": [1],
+    "Dan": [1]
 }
 
 roles = ['cashier', 'manager']
 worker_roles = {
-    "Madina": ['cashier'],
+    "Madina": ['cashier', 'manager'],
     "Alan": ['manager', 'cashier'],
     "Ben": ['cashier', 'manager'],
-    "Dan": ['manager']
+    "Dan": ['manager', 'cashier']
 }
 
 
-schedule_workers(pay, availability, roles, worker_roles,total_hours_in_day=5,max_hours_per_employee_per_day=3,total_days=3)
+schedule_workers(pay, availability, roles, worker_roles,total_hours_in_day=6,max_hours_per_employee_per_day=3,total_days=1)
