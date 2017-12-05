@@ -100,8 +100,7 @@ def schedule_workers(pay, availability, roles, worker_roles, max_hours_per_emplo
             for day in days:
                 for j in range(m):
                     if A[i, day] == 0:
-                        relaxable.append(model.addConstr(hours[day][role][i, j] == 0))
-                        relax_penalty.append(pay_vec[i] * 0.5) # Overtime pay time and a half
+                        model.addConstr(hours[day][role][i, j] == 0)
 
     # only one per shift per role
     for day in days:
@@ -117,7 +116,8 @@ def schedule_workers(pay, availability, roles, worker_roles, max_hours_per_emplo
     # everyone can work a max of 8 hours per day
     for day in days:
         for row in sum(hours[day][role] for role in roles):
-            model.addConstr(quicksum(row) <= max_hours)
+            relaxable.append(model.addConstr(quicksum(row) <= max_hours))
+            relax_penalty.append(pay_vec[i] * 0.5)  # Overtime pay time and a half
 
     # each person can only perform only 1 role per day
     for day in days:
