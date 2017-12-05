@@ -23,4 +23,4 @@ worker_roles = {
 }
 
 
-schedule_workers(pay, availability, roles, worker_roles,total_hours_in_day=6,max_hours_per_employee_per_day=3,total_days=1)
+schedule_workers(pay, availability, roles, worker_roles,total_hours_in_day=7,max_hours_per_employee_per_day=3,total_days=1)
