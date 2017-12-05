@@ -33,9 +33,7 @@ def feasibility_checks(n,m, max_hours, A, roles, workers, worker_roles):
     assert m <= n * max_hours / len(roles), 'Not enough employees to fill each role every day'
 
 
-
-
-def schedule_employees(pay, availability, roles, worker_roles):
+def schedule_workers(pay, availability, roles, worker_roles, max_hours_per_employee_per_day = 8, total_hours_in_day = 12, total_days = 7, attempt_fair_assignment = True):
     """
     example input:
     pay = {
@@ -71,16 +69,19 @@ def schedule_employees(pay, availability, roles, worker_roles):
     workers = pay.keys()
 
     n = len(pay)  # number of employees
-    m = 12  # number hours in the day
-    max_hours = 8
+    m = total_hours_in_day  # number hours in the day
+    max_hours = max_hours_per_employee_per_day
+    hour_evenness = 2
 
-    days = [day for day in range(7)]
+    days = [day for day in range(total_days)]
     day_names = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
 
     pay_vec = np.array([pay[worker] for worker in workers]) # pay vector
     A = np.array([[av for av in availability[worker]] for worker in workers]) # availability matrix
 
     feasibility_checks(n, m, max_hours, A, roles, workers, worker_roles)
+    relaxable = []
+    relax_penalty = []
 
     # form: hours[day][role][employee_index, hour_index]
     hours = [{role: np.array([[model.addVar(vtype=GRB.BINARY, name=role + '_x_{' + str(i) + ',' + str(j) + '}') for j in range(m)] for i in range(n)])
@@ -93,7 +94,8 @@ def schedule_employees(pay, availability, roles, worker_roles):
             for day in days:
                 for j in range(m):
                     if A[i, day] == 0:
-                        model.addConstr(hours[day][role][i, j] == 0)
+                        relaxable.append(model.addConstr(hours[day][role][i, j] == 0))
+                        relax_penalty.append(pay_vec[i] * 0.5) # Overtime pay time and a half
 
     # only one per shift per role
     for day in days:
@@ -108,8 +110,8 @@ def schedule_employees(pay, availability, roles, worker_roles):
 
     # everyone can work a max of 8 hours per day
     for day in days:
-            for row in sum(hours[day][role] for role in roles):
-                model.addConstr(quicksum(row) <= max_hours)
+        for row in sum(hours[day][role] for role in roles):
+            model.addConstr(quicksum(row) <= max_hours)
 
     # each person can only perform only 1 role per day
     for day in days:
@@ -138,16 +140,35 @@ def schedule_employees(pay, availability, roles, worker_roles):
                     model.addConstr(helper == hours[day][role][i, j + 1] * quicksum(hours[day][role][i, :j]))  # if helper == 0 then either hours[i,j+1] is zero or all the previous hours are zero
                     model.addConstr((hours[day][role][i, j] == 0) >> (helper == 0))  # if hour j is a zero then hour j+1 can only be a 1 if all the previous are zero
 
+
+
+    # Keep number of hours worked even
+    if attempt_fair_assignment:
+        hours_per_worker_per_week = sum(col for col in np.array(sum(sum(hours[day][role] for day in days) for role in roles)).T)
+        mu = quicksum(hours_per_worker_per_week) / n
+
+        for worker_hours in hours_per_worker_per_week:
+            helper_1 = model.addVar(lb = -GRB.INFINITY)
+            helper_2 = model.addVar(lb = 0)
+            model.addConstr(helper_1 == mu - worker_hours)
+            model.addConstr(helper_2 == abs_(helper_1))
+
+            relaxable.append(model.addConstr(helper_2 <= hour_evenness))
+            relax_penalty.append(1)
+
     model.setObjective(quicksum(np.array(np.array([[np.dot(hours[day][role].T, pay_vec).ravel() for role in roles] for day in days]).ravel()).ravel()), GRB.MINIMIZE)
 
     model.update()
     model.optimize()
 
-    while model.status == GRB.status.INFEASIBLE:
-        model.feasRelaxS(1, True, False, True)
-        model.update()
-        model.optimize()
+    while model.status == GRB.status.INFEASIBLE or model.status == GRB.status.INF_OR_UNBD:
         print("Had infeasible model: relaxing constraints")
+        print(model.feasRelax(1, True, None, None, None, constrs=relaxable, rhspen=relax_penalty))
+        model.update()
+        if model.status == GRB.status.INF_OR_UNBD:
+            model.Params.DualReductions = 0
+        model.optimize()
+        print(model.status)
 
     # print binary matrix of role assignments
     # for day, day_name in enumerate(day_names):
@@ -171,6 +192,11 @@ def schedule_employees(pay, availability, roles, worker_roles):
                         print str(j) + ' ' + workers[i] + ', ',
             print ']'
 
+    #summary
+    print('total number of hours worked per employee:')
+    for i, worker in enumerate(workers):
+        print(worker,hours_per_worker_per_week[i].getValue())
+
     model.write('main.lp')
 
 
@@ -183,7 +209,6 @@ if __name__ == '__main__':
     i.e.
        employees_available_each_day ==  #_roles * (total_hours_in_day / max_hours_allowed_per_day)
     '''
-
     pay = {
         "Madina": 10,
         "Alan": 12,
@@ -196,17 +221,6 @@ if __name__ == '__main__':
         "bob": 12,
         "sally": 13
     }
-
-    # availability = {
-    #     "Madina": [0, 1, 0, 1, 0, 1, 1],
-    #     "Alan": [1, 0, 1, 0, 1, 1, 1],
-    #     "Ben": [1, 1, 1, 1, 1, 0, 0],
-    #     "Dan": [0, 1, 0, 1, 0, 0, 0],
-    #     "Jack": [1, 1, 1, 1, 1, 1, 1],
-    #     "Jill": [1, 1, 1, 1, 1, 1, 1],
-    #     "Erik": [1, 1, 0, 0, 1, 1, 0],
-    #     "Mjolsness": [1, 0, 1, 1, 0, 0,1 ],
-    # }
 
     availability = {
         "Madina": [1, 0, 1, 0, 1, 1, 1],
@@ -236,4 +250,4 @@ if __name__ == '__main__':
     }
 
 
-    schedule_employees(pay, availability, roles, worker_roles)
+    schedule_workers(pay, availability, roles, worker_roles)
