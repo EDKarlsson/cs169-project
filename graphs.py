@@ -20,9 +20,9 @@ times = []
 
 varnum_to_runtime = []
 with open('linedata.csv', 'w') as linedata:
-    linedata.write('runtime, variablecount' + '\n')
-    for i in range(50):
-        for _ in range(10):
+    linedata.write('runtime,variable_count,hours_in_day,max_hours' + '\n')
+    for i in range(15):
+        for _ in range(15):
             try :
                 worker = 'worker_' + str(i)
                 pay[worker] = int(np.random.randint(1,20))
@@ -41,7 +41,7 @@ with open('linedata.csv', 'w') as linedata:
                     runtime = timeit.timeit(lambda: get_model(),number=1)
                     # times.append(runtime)
                     # varnum_to_runtime.append((runtime, len(model.getVars())))
-                    linedata.write(str(runtime) + ',' + str(len(model.getVars())) + '\n')
+                    linedata.write(str(runtime) + ',' + str(len(model.getVars())) + ',' + str(total_hours_in_days) + ',' + str(max_hr_per_day) + '\n')
 
             except AssertionError:
                 pass # skip infeasible models
@@ -50,9 +50,9 @@ with open('linedata.csv', 'w') as linedata:
     # for r,v in varnum_to_runtime:
     #     linedata.write(str(r) + ',' + str(v) + '\n')
 
-print(times)
-plt.title("runtime")
-plt.xlabel("number of workers")
-plt.ylabel("runtime (in seconds)")
-plt.plot(times)
-plt.show()
+# print(times)
+# plt.title("runtime")
+# plt.xlabel("number of workers")
+# plt.ylabel("runtime (in seconds)")
+# plt.plot(times)
+# plt.show()
