@@ -258,7 +258,7 @@ if __name__ == '__main__':
     # }
 
     #TODO: Change value to number of workers wanted
-    numWorkers = 10
+    numWorkers = 15
 
     roles = ['cashier', 'manager', 'floor']
     pay = {}
@@ -277,9 +277,11 @@ if __name__ == '__main__':
         worker_roles[workerName] = random.sample(roles,numRoles)
 
         #Randomly assign worker availability
-        availabilityArray = [] #Holds availability for this worker
-        for dateIndex in range(0,7):
-            availabilityArray.append(random.randint(0,1))
+        availabilityArray = [0]*7 #Holds availability for this worker
+        daysAvailable = random.sample([1, 2, 3, 4, 5, 6, 7], random.randint(3,7)) #Randomly pick 3 to 7 days to be available
+        #Toggle the chosen days from unavailable to available
+        for i, day in enumerate(daysAvailable):
+            availabilityArray[day-1] = 1
         availability[workerName] = availabilityArray
 
     print(pay)
@@ -289,4 +291,4 @@ if __name__ == '__main__':
     start = time.time()
     schedule_workers(pay, availability, roles, worker_roles)
     end = time.time()
-    print("Elapsed Time: %f"%((end-start)*1000))
+    print("Elapsed Time: %f"%((end-start)))
