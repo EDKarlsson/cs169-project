@@ -20,7 +20,7 @@ times = []
 
 varnum_to_runtime = []
 with open('linedata.csv', 'w') as linedata:
-    linedata.write('runtime,variable_count,hours_in_day,max_hours' + '\n')
+    linedata.write('runtime,variable_count,num_workers,hours_in_day,max_hours' + '\n')
     for i in range(15):
         for _ in range(15):
             try :
@@ -41,7 +41,7 @@ with open('linedata.csv', 'w') as linedata:
                     runtime = timeit.timeit(lambda: get_model(),number=1)
                     # times.append(runtime)
                     # varnum_to_runtime.append((runtime, len(model.getVars())))
-                    linedata.write(str(runtime) + ',' + str(len(model.getVars())) + ',' + str(total_hours_in_days) + ',' + str(max_hr_per_day) + '\n')
+                    linedata.write(str(runtime) + ',' + str(len(model.getVars())) + ',' + str(i) + ',' + str(total_hours_in_days) + ',' + str(max_hr_per_day) + '\n')
 
             except AssertionError:
                 pass # skip infeasible models
