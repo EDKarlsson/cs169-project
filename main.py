@@ -1,5 +1,7 @@
 from gurobipy import *
 import numpy as np
+import random
+import time
 
 
 def feasibility_checks(n,m, max_hours, A, roles, workers, worker_roles):
@@ -215,45 +217,76 @@ if __name__ == '__main__':
     i.e.
        employees_available_each_day ==  #_roles * (total_hours_in_day / max_hours_allowed_per_day)
     '''
-    pay = {
-        "Madina": 10,
-        "Alan": 12,
-        "Ben": 10,
-        "Dan": 8,
-        "Jack": 10,
-        "Jill": 9,
-        "Erik": 11,
-        "Mjolsness": 14,
-        "bob": 12,
-        "sally": 13
-    }
+    # pay = {
+    #     "Madina": 10,
+    #     "Alan": 12,
+    #     "Ben": 10,
+    #     "Dan": 8,
+    #     "Jack": 10,
+    #     "Jill": 9,
+    #     "Erik": 11,
+    #     "Mjolsness": 14,
+    #     "bob": 12,
+    #     "sally": 13
+    # }
+    #
+    # availability = {
+    #     "Madina": [1, 0, 1, 0, 1, 1, 1],
+    #     "Alan": [0, 1, 0, 1, 1, 1, 1],
+    #     "Ben": [1, 1, 1, 1, 1, 0, 0],
+    #     "Dan": [1, 1, 1, 1, 0, 1, 1],
+    #     "Jack": [1, 1, 1, 1, 1, 1, 1],
+    #     "Jill": [1, 1, 1, 1, 0, 1, 1],
+    #     "Erik": [1, 1, 1, 1, 1, 1, 1],
+    #     "Mjolsness": [1, 0, 1, 1, 1, 1, 1],
+    #     "bob": [1, 1, 1, 1, 1, 1, 1],
+    #     "sally": [0, 1, 1, 0, 0, 1, 1]
+    # }
+    #
+    # roles = ['cashier', 'manager', 'floor']
+    # worker_roles = {
+    #     "Madina": ['cashier', 'floor', 'butcher'],
+    #     "Alan": ['manager', 'cashier', 'floor'],
+    #     "Ben": ['cashier', 'floor', 'manager'],
+    #     "Dan": ['butcher', 'manager'],
+    #     "Jack": ['cashier', 'floor', 'butcher'],
+    #     "Jill": ['floor', 'cashier'],
+    #     "Erik": ['cashier', 'floor', 'butcher'],
+    #     "Mjolsness": ['manager', 'cashier'],
+    #     "bob": ["cashier", "floor", "butcher"],
+    #     "sally": ['cashier', 'floor', 'manager']
+    # }
 
-    availability = {
-        "Madina": [1, 0, 1, 0, 1, 1, 1],
-        "Alan": [0, 1, 0, 1, 1, 1, 1],
-        "Ben": [1, 1, 1, 1, 1, 0, 0],
-        "Dan": [1, 1, 1, 1, 0, 1, 1],
-        "Jack": [1, 1, 1, 1, 1, 1, 1],
-        "Jill": [1, 1, 1, 1, 0, 1, 1],
-        "Erik": [1, 1, 1, 1, 1, 1, 1],
-        "Mjolsness": [1, 0, 1, 1, 1, 1, 1],
-        "bob": [1, 1, 1, 1, 1, 1, 1],
-        "sally": [0, 1, 1, 0, 0, 1, 1]
-    }
+    #TODO: Change value to number of workers wanted
+    numWorkers = 10
 
     roles = ['cashier', 'manager', 'floor']
-    worker_roles = {
-        "Madina": ['cashier', 'floor', 'butcher'],
-        "Alan": ['manager', 'cashier', 'floor'],
-        "Ben": ['cashier', 'floor', 'manager'],
-        "Dan": ['butcher', 'manager'],
-        "Jack": ['cashier', 'floor', 'butcher'],
-        "Jill": ['floor', 'cashier'],
-        "Erik": ['cashier', 'floor', 'butcher'],
-        "Mjolsness": ['manager', 'cashier'],
-        "bob": ["cashier", "floor", "butcher"],
-        "sally": ['cashier', 'floor', 'manager']
-    }
+    pay = {}
+    availability = {}
+    worker_roles = {}
 
+    for index in range(1,numWorkers+1):
+        print('Generating worker %d' %index)
+        workerName = ('worker%d' %index)
 
+        #Randomly assign worker pay
+        pay[workerName] = random.randint(8, 15) #Random pay between 8 and 15
+
+        #Randomly assign worker roles
+        numRoles = random.randint(1,3) #Number of roles to assign worker between 1 and 3
+        worker_roles[workerName] = random.sample(roles,numRoles)
+
+        #Randomly assign worker availability
+        availabilityArray = [] #Holds availability for this worker
+        for dateIndex in range(0,7):
+            availabilityArray.append(random.randint(0,1))
+        availability[workerName] = availabilityArray
+
+    print(pay)
+    print(availability)
+    print(worker_roles)
+
+    start = time.time()
     schedule_workers(pay, availability, roles, worker_roles)
+    end = time.time()
+    print("Elapsed Time: %f"%((end-start)*1000))
