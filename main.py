@@ -204,6 +204,7 @@ def schedule_workers(pay, availability, roles, worker_roles, max_hours_per_emplo
         print(worker,hours_per_worker_per_week[i].getValue())
 
     model.write('main.lp')
+    return model
 
 
 
