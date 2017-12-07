@@ -1,0 +1,45 @@
+---
+title: "regression_analysis"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+runtime_data <- read.csv('/Users/benjaminschrift/Documents/school/Current/cs-169/project/cs169-project/linedata.csv')
+
+runtime_data[runtime_data$runtime > 35,] #get outliers
+runtime_data <- runtime_data[-c(36,68,70,77,81),]
+
+model = lm(runtime ~ variable_count, data=runtime_data)
+sq_model = lm(runtime ~ I(variable_count^2), data=runtime_data)
+exp_model = lm(log(runtime) ~ variable_count, data=runtime_data)
+
+
+xvec = seq(0,1500,length=101)
+logpred = predict(sq_model,newdata=data.frame(variable_count=xvec))
+
+exp_pred = exp(predict(exp_model, newdata=data.frame(variable_count=xvec)))
+plot(runtime_data$variable_count,runtime_data$runtime)
+abline(model, col="red")
+lines(xvec,logpred,col="blue")
+lines(xvec,exp_pred,col="green")
+
+
+plot(runtime_data$variable_count,resid(model))
+qqnorm(resid(model))
+
+summary(sq_model)
+
+plot(runtime_data$variable_count,resid(sq_model))
+qqnorm(resid(sq_model))
+
+
+summary(exp_model)
+
+
+plot(runtime_data$variable_count,resid(exp_model))
+qqnorm(resid(exp_model))
+```

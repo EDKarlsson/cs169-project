@@ -42,6 +42,7 @@ with open('linedata.csv', 'w') as linedata:
                     # times.append(runtime)
                     # varnum_to_runtime.append((runtime, len(model.getVars())))
                     linedata.write(str(runtime) + ',' + str(len(model.getVars())) + ',' + str(i) + ',' + str(total_hours_in_days) + ',' + str(max_hr_per_day) + '\n')
+                    linedata.flush()
 
             except AssertionError:
                 pass # skip infeasible models
