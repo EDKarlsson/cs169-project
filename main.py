@@ -244,15 +244,15 @@ if __name__ == '__main__':
 
     roles = ['cashier', 'manager', 'floor']
     worker_roles = {
-        "Madina": ['cashier', 'floor', 'butcher'],
+        "Madina": ['cashier', 'floor'],
         "Alan": ['manager', 'cashier', 'floor'],
         "Ben": ['cashier', 'floor', 'manager'],
-        "Dan": ['butcher', 'manager'],
-        "Jack": ['cashier', 'floor', 'butcher'],
+        "Dan": ['manager'],
+        "Jack": ['cashier', 'floor'],
         "Jill": ['floor', 'cashier'],
-        "Erik": ['cashier', 'floor', 'butcher'],
+        "Erik": ['cashier', 'floor'],
         "Mjolsness": ['manager', 'cashier'],
-        "bob": ["cashier", "floor", "butcher"],
+        "bob": ["cashier", "floor"],
         "sally": ['cashier', 'floor', 'manager']
     }
 
